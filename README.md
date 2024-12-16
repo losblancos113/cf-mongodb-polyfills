@@ -1,5 +1,5 @@
-# cf-tcp-mock
-This package allows the use of the `mongodb` npm package in a cloudflare worker. It does this by polyfilling the `net` and `tls` modules in the `mongodb` package to use the `cf-tcp-mock` package instead.
+# cf-mongodb-polyfills
+This package allows the use of the `mongodb` npm package in a cloudflare worker. It does this by polyfilling the `net` and `tls` modules in the `mongodb` package to use the `cf-mongodb-polyfills` package instead.
 
 
 ## Description
@@ -15,7 +15,7 @@ However, via the use of the [`module aliasing`](https://developers.cloudflare.co
 To install the package, run:
 
 ```sh
-npm install cf-tcp-mock
+npm install cf-mongodb-polyfills
 ```
 
 ### Modify `wrangler.toml`
@@ -27,9 +27,9 @@ To use the package in a cloudflare worker app, you must create [module aliases]
 # ...
 
 [alias]
-"net" = "@jchoi2x/cf-tcp-mock/net"
-"dns" = "@jchoi2x/cf-tcp-mock/dns"
-"tls" = "@jchoi2x/cf-tcp-mock/tls"
+"net" = "@jchoi2x/cf-mongodb-polyfills/net"
+"dns" = "@jchoi2x/cf-mongodb-polyfills/dns"
+"tls" = "@jchoi2x/cf-mongodb-polyfills/tls"
 ```
 
 
