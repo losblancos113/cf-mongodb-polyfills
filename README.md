@@ -47,6 +47,7 @@ export default {
     const tlsClient = new MongoClient('mongodb+srv://sharedddas:sdfaqwevccfjkjde9ei@dvi.kevpg.mongodb.net/?retryWrites=true&w=majority&appName=dev');
     await tlsClient.connect();
 
+    // connect to mongo running locally
     const client = new MongoClient('mongodb://localhost:27017');
     await client.connect();
 
@@ -63,7 +64,3 @@ export default {
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
