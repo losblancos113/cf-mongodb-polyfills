@@ -41,7 +41,7 @@ With these changes in place, you can now use the `mongodb` package in your cloud
 import { MongoClient } from 'mongodb';
 
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
 
     // connect to atlas mongodb
     const tlsClient = new MongoClient('mongodb+srv://sharedddas:sdfaqwevccfjkjde9ei@dvi.kevpg.mongodb.net/?retryWrites=true&w=majority&appName=dev');
@@ -54,10 +54,10 @@ export default {
     const db = tlsClient.db('test');
     const users = await db.collection('users').find({}).toArray().limit(10);
 
-		return Response.json({
+    return Response.json({
       users
     })
-	},
+  },
 } satisfies ExportedHandler<Env>;
 ```
 
