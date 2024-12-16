@@ -6,9 +6,14 @@ export const createConnection = (opts: {
   port: number;
 }) => {
   // use socket.readable to read from the socket and write to m
+  console.log('createConnection called');
   const cfSocket = new CloudflareSocket(false);
   cfSocket.connect(opts);
   return cfSocket;
+};
+
+export const isIP = (host: string) => {
+  return /\d+\.\d+\.\d+\.\d+/.test(host);
 };
 
 export const net = {

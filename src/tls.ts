@@ -7,6 +7,7 @@ export const connect = (opts: {
   servername: string;
 }) => {
   // use socket.readable to read from the socket and write to m
+  console.log('tls.connect called');
   const cfSocket = new CloudflareSocket(true);
   cfSocket.connect(opts);
   return cfSocket;

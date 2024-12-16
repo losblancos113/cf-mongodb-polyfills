@@ -1,4 +1,4 @@
-import type { SrvRecord } from 'dns';
+import type { SrvRecord } from 'node:dns';
 
 interface DnsResponse {
   Status: number;
@@ -20,6 +20,7 @@ interface DnsResponse {
 }
 export async function resolveTxt(hostName: string) {
   try {
+    console.log('resolveTxt called');
     const txtResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${hostName}&type=TXT`, {
       headers: {
         Accept: 'application/dns-json',
@@ -36,6 +37,7 @@ export async function resolveTxt(hostName: string) {
 
 export async function resolveSrv(hostName: string) {
   try {
+    console.log('resolveSrv called');
     const txtResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${hostName}&type=SRV`, {
       headers: {
         Accept: 'application/dns-json',

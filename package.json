@@ -1,31 +1,36 @@
 {
   "name": "@jchoi2x/cf-tcp-mock",
   "description": "cloudflare worker polyfill for net, tls, and dns for making mongodb connections work in workerd",
-  "version": "0.0.2",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "repository": "https://github.com/jchoi2x/cf-tcp-mock",
+  "version": "0.0.4",
+  "main": "./dist/index.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
     "./net": {
-      "import": "./dist/net.js",
-      "types": "./dist/net.d.ts"
+      "import": "./src/net.ts",
+      "require": "./src/net.ts"
     },
     "./tls": {
-      "import": "./dist/tls.js",
-      "types": "./dist/tls.d.ts"
+      "import": "./src/tls.ts",
+      "require": "./src/tls.ts"
     },
     "./dns": {
-      "import": "./dist/dns.js",
-      "types": "./dist/dns.d.ts"
+      "import": "./src/dns.ts",
+      "require": "./src/dns.ts"
+    },
+    "./net-mock": {
+      "import": "./src/net-mock.ts",
+      "require": "./src/net-mock.ts"
     }
   },
-  "./net-mock": {
-    "import": "./dist/net-mock.js",
-    "types": "./dist/net-mock.d.ts"
-  },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js"
   },
   "keywords": [
     "cloudflare",
