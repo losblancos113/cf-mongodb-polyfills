@@ -1,8 +1,8 @@
 import { connect } from 'cloudflare:sockets';
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 
 import type { SocketConnectOpts, SocketReadyState } from 'node:net';
-import type { Duplex } from 'node:stream';
+import type { Duplex } from 'stream';
 
 /**
  * This class is a polyfill for the `net.Socket` class in node.js but using the
@@ -119,8 +119,12 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
   private _cfWriter: WritableStreamDefaultWriter | null = null;
   private _cfReader: ReadableStreamDefaultReader | null = null;
 
-  constructor(readonly ssl: boolean) {
+  constructor(readonly ssl: boolean, readonly quiet: boolean = true) {
     super();
+  }
+
+  private log(...args: unknown[]) {
+    if (!this.quiet) log(...args);
   }
 
   sinks: Set<NodeJS.WritableStream> = new Set<NodeJS.WritableStream>();
@@ -130,42 +134,57 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: { end?: boolean | undefined } | undefined
   ): T {
+    // calling this `thisSocket.pipe(<dest>)` will cause the destination to be added 
+    // to the list of sinks. Data is written to this list of sinks when data comes into this socket.
     this.sinks.add(destination);
     return this as unknown as T;
   }
 
   setNoDelay() {
+    // TODO: implement
     return this;
   }
   setKeepAlive() {
+    // TODO: implement
     return this;
   }
   ref() {
+    // TODO: implement
     return this;
   }
   unref() {
+    // TODO: implement
     return this;
   }
   pause() {
+    // TODO: implement
     return this;
   }
   resume() {
+    // TODO: implement
     return this;
   }
   address() {
+    // TODO: implement
     return {};
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setTimeout(_timeout: number, _callback?: () => void) {
+    // TODO: implement
     return this;
   }
   resetAndDestroy(): this {
+    // TODO: implement
     return this;
   }
-  destroySoon(): void {}
+
+  destroySoon(): void {
+    // TODO: implement
+  }
+
   _connect(options: SocketConnectOpts, connectListener?: () => void): this {
     try {
-      log('connecting');
+      this.log('connecting');
       if (connectListener) this.once('connect', connectListener);
 
       const sOptions: Partial<SocketOptions> = this.ssl ? { secureTransport: 'on' } : {};
@@ -182,19 +201,12 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
       this._cfReader = this._cfSocket.readable.getReader();
       this._cfSocket.opened
         .then(() => {
-          log('socket opened');
+          this.log('socket opened');
           this._addClosedHandler();
 
           this._cfWriter!.ready.then(() => {
-            log(`${this._upgraded ? 'ssl' : ''} socket ready`);
-            // if (this.ssl) {
-            //   this._listenOnce().catch((e) => {
-            //     console.log('listenOnceErr', e);
-            //     this.emit('error', e);
-            //   });
-            // } else {
+            this.log(`${this._upgraded ? 'ssl' : ''} socket ready`);
             this._listen().catch((e) => this.emit('error', e));
-            // }
 
             this.writable = true;
             this.pending = false;
@@ -243,15 +255,15 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
   }
 
   disableRenegotiation() {
-    console.log('disableRenegotiation');
+    this.log('disableRenegotiation');
   }
   async _listen() {
     while (true) {
-      log(`awaiting receive from CF socket: ${this.ssl ? 'ssl' : ''}`);
+      this.log(`awaiting receive from CF socket: ${this.ssl ? 'ssl' : ''}`);
       const { done, value } = await this._cfReader!.read();
-      log('CF socket received:', done, Buffer.from(value));
+      this.log('CF socket received:', done, Buffer.from(value));
       if (done) {
-        log('done');
+        this.log('done');
         break;
       }
       this.emit('data', Buffer.from(value));
@@ -261,35 +273,25 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
     }
   }
 
-  async _listenOnce() {
-    log('awaiting first receive from CF socket');
-    const { done, value } = await this._cfReader!.read();
-    log('First CF socket received:', done, value);
-
-    this.emit('data', Buffer.from(value || ''));
-  }
-
   write(
     data: Uint8Array | string
     // encoding: BufferEncoding = 'utf8',
     // callback: (...args: unknown[]) => void = () => {}
   ) {
-    log('write called', data);
+    this.log('write called', data);
     // if (data.length === 0) return callback();
     if (typeof data === 'string') data = Buffer.from(data);
 
-    log('sending data direct:', data);
+    this.log('sending data direct:', data);
 
     this._cfWriter!.write(data).then(
       () => {
-        log('data sent');
-        // callback();
+        this.log('data sent');
         this.emit('written');
       },
       (err) => {
-        log('send error', err);
+        this.log('send error', err);
         this.emit('error');
-        // callback(err);
       }
     );
 
@@ -305,9 +307,8 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
       callback?.();
       return this;
     }
-    log('ending CF socket');
+    this.log('ending CF socket');
     const errHandler = (err: Error) => {
-      console.log('error', err);
       if (callback) {
         return callback(err);
       }
@@ -322,36 +323,18 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
   }
 
   destroy(reason?: Error) {
-    const err = new Error('s');
-    log('destroying CF socket', reason, err.stack);
     this.destroyed = true;
     return this.end();
-  }
-
-  startTls(options: TlsOptions) {
-    if (this._upgraded) {
-      // Don't try to upgrade again.
-      this.emit('error', 'Cannot call `startTls()` more than once on a socket');
-      return;
-    }
-    this._cfWriter!.releaseLock();
-    this._cfReader!.releaseLock();
-    this._upgrading = true;
-    this._cfSocket = this._cfSocket!.startTls(options);
-    this._cfWriter = this._cfSocket.writable.getWriter();
-    this._cfReader = this._cfSocket.readable.getReader();
-    this._addClosedHandler();
-    this._listen().catch((e) => this.emit('error', e));
   }
 
   _addClosedHandler() {
     this._cfSocket!.closed.then(() => {
       if (!this._upgrading) {
-        log('CF socket closed');
+        this.log('CF socket closed');
         this._cfSocket = null;
         this.emit('close');
       } else {
-        log('CF socket closed/upgraded');
+        this.log('CF socket closed/upgraded');
         this._upgrading = false;
         this._upgraded = true;
       }
@@ -359,11 +342,10 @@ export class CloudflareSocket extends EventEmitter implements Pick<Duplex, 'pipe
   }
 }
 
-const debug = true;
 
 function dump(data: unknown) {
   if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
-    const hex = Buffer.from(data as any).toString('hex');
+    const hex = Buffer.from(data as unknown as Parameters<typeof Buffer.from>[0]).toString('hex');
     const str = new TextDecoder().decode(data);
     return `\n>>> STR: "${str.replace(/\n/g, '\\n')}"\n>>> HEX: ${hex}\n`;
   } else {
@@ -373,5 +355,5 @@ function dump(data: unknown) {
 
 function log(...args: unknown[]) {
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  debug;
+  console.log(...args.map(dump));
 }

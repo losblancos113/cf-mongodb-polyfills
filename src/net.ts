@@ -5,8 +5,6 @@ export const createConnection = (opts: {
   host: string;
   port: number;
 }) => {
-  // use socket.readable to read from the socket and write to m
-  console.log('createConnection called');
   const cfSocket = new CloudflareSocket(false);
   cfSocket.connect(opts);
   return cfSocket;

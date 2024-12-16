@@ -18,9 +18,14 @@ interface DnsResponse {
     data: string;
   }[];
 }
+
+/**
+ * gets the TXT dns records by using cloudflares api instead of the native dns module
+ * @param hostName 
+ * @returns {string[][]}
+ */
 export async function resolveTxt(hostName: string) {
   try {
-    console.log('resolveTxt called');
     const txtResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${hostName}&type=TXT`, {
       headers: {
         Accept: 'application/dns-json',
@@ -35,9 +40,13 @@ export async function resolveTxt(hostName: string) {
   }
 }
 
+/**
+ * gets the SRV dns records by using cloudflares api instead of the native dns module 
+ * @param hostName the host name (for example google.com)
+ * @returns {SrvRecord[]} the SRV records
+ */
 export async function resolveSrv(hostName: string) {
   try {
-    console.log('resolveSrv called');
     const txtResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${hostName}&type=SRV`, {
       headers: {
         Accept: 'application/dns-json',
